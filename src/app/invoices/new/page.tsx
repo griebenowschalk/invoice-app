@@ -1,15 +1,28 @@
-import { sql } from "drizzle-orm";
+"use client";
 
-import { db } from "@/db";
+import { startTransition, SyntheticEvent, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { createAction } from "@/app/actions";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import SubmitButton from "@/components/SubmitButton";
 
-export default async function NewInvoice() {
-  const result = await db.execute(sql`SELECT current_database()`);
-  console.log("Result from database:", result);
+export default function NewInvoice() {
+  const [state, setState] = useState("ready");
+
+  function handleOnSubmit(event: SyntheticEvent) {
+    event.preventDefault();
+
+    if (state === "submitting") return;
+    setState("submitting");
+
+    startTransition(async () => {
+      const formData = new FormData(event.target as HTMLFormElement);
+      await createAction(formData);
+    });
+  }
 
   return (
     <main className="flex flex-col justify-center gap-6 max-w-5xl mx-auto my-12">
@@ -17,8 +30,11 @@ export default async function NewInvoice() {
         <h1 className="text-3xl font-semibold">Create Invoice</h1>
       </div>
 
-      {JSON.stringify(result)}
-      <form className="grid gap-4 max-w-xs">
+      <form
+        className="grid gap-4 max-w-xs"
+        action={createAction}
+        onSubmit={handleOnSubmit}
+      >
         <div>
           <Label htmlFor="customer" className="block mb-2 text-sm font-medium">
             Customer
@@ -48,7 +64,10 @@ export default async function NewInvoice() {
             Amount
           </Label>
           <Input
+            inputMode="decimal"
             type="number"
+            step="0.01"
+            min="0"
             id="amount"
             name="amount"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
@@ -70,9 +89,7 @@ export default async function NewInvoice() {
           />
         </div>
         <div className="mt-6">
-          <Button type="submit" className="w-full font-semibold">
-            Create Invoice
-          </Button>
+          <SubmitButton />
         </div>
       </form>
     </main>
