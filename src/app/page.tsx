@@ -7,7 +7,7 @@ export default function Home() {
       <h1 className="text-5xl font-bold">Invoice App</h1>
       <p>
         <Button asChild>
-          <Link href="/dashboard">Sign In</Link>
+          <Link href="/dashboard">Dashboard</Link>
         </Button>
       </p>
     </main>

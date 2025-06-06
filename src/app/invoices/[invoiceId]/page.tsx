@@ -1,7 +1,8 @@
 import { db } from "@/db";
-
 import { Invoices } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+import { notFound } from "next/navigation";
 
 import { format } from "date-fns";
 import StatusBadge from "@/components/StatusBadge";
@@ -13,11 +14,19 @@ interface InvoiceProps {
 export default async function Invoice({ params }: InvoiceProps) {
   const invoiceId = parseInt(params.invoiceId);
 
+  if (isNaN(invoiceId)) {
+    throw new Error("Invalid invoice ID");
+  }
+
   const [result] = await db
     .select()
     .from(Invoices)
     .where(eq(Invoices.id, invoiceId))
     .limit(1);
+
+  if (!result) {
+    notFound();
+  }
 
   return (
     <main className="h-full max-w-5xl mx-auto my-12">
