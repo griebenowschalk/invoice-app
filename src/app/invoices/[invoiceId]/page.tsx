@@ -1,18 +1,24 @@
 import { db } from "@/db";
 import { Invoices } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 
-import { notFound } from "next/navigation";
-
-import { format } from "date-fns";
-import StatusBadge from "@/components/StatusBadge";
+import { notFound, redirect } from "next/navigation";
+import { Invoice as InvoiceType } from "@/types/invoices";
+import Invoice from "./Invoice";
 
 interface InvoiceProps {
   params: { invoiceId: string };
 }
 
-export default async function Invoice({ params }: InvoiceProps) {
-  const invoiceId = parseInt(params.invoiceId);
+export default async function InvoicePage({ params }: InvoiceProps) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const invoiceId = parseInt((await params).invoiceId);
 
   if (isNaN(invoiceId)) {
     throw new Error("Invalid invoice ID");
@@ -21,50 +27,12 @@ export default async function Invoice({ params }: InvoiceProps) {
   const [result] = await db
     .select()
     .from(Invoices)
-    .where(eq(Invoices.id, invoiceId))
+    .where(and(eq(Invoices.id, invoiceId), eq(Invoices.user_id, userId)))
     .limit(1);
 
   if (!result) {
     notFound();
   }
 
-  return (
-    <main className="h-full max-w-5xl mx-auto my-12">
-      <div className="flex justify-between mb-8">
-        <h1 className="flex items-center text-3xl font-semibold gap-4">
-          Invoice {invoiceId} <StatusBadge status={result.status} />
-        </h1>
-        <p></p>
-      </div>
-      <p className="text-3xl mb-3">R {(result.amount / 100).toFixed(2)}</p>
-      <p className="text-lg mb-8">{result.description}</p>
-      <h2 className="font-bold text-lg mb-4">Details</h2>
-      <ul className="grid gap-2">
-        <li className="flex gap-4 items-center">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">
-            Invoice ID:
-          </strong>{" "}
-          {invoiceId}
-        </li>
-        <li className="flex gap-4 items-center">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">
-            Date:
-          </strong>{" "}
-          {format(result.created_at, "dd/MM/yyyy")}
-        </li>
-        <li className="flex gap-4 items-center">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">
-            Customer:
-          </strong>{" "}
-          {result.customer}
-        </li>
-        <li className="flex gap-4 items-center">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">
-            Email:
-          </strong>{" "}
-          {result.email}
-        </li>
-      </ul>
-    </main>
-  );
+  return <Invoice invoice={result as InvoiceType} />;
 }

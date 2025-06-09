@@ -1,4 +1,6 @@
-export type Status = "open" | "paid" | "void" | "uncollectable";
+import { AVAILABLE_STATUSES } from "@/data/invoices";
+
+export type Status = (typeof AVAILABLE_STATUSES)[number]["value"];
 
 export type Invoice = {
   id: number;

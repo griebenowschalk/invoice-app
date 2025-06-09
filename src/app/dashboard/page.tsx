@@ -1,15 +1,30 @@
 import { db } from "@/db";
+import { Invoices } from "@/db/schema";
+
+import { auth } from "@clerk/nextjs/server";
+
+import { eq } from "drizzle-orm";
 
 import { Button } from "@/components/ui/button";
 import Container from "@/components/Container";
+
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { CirclePlus } from "lucide-react";
-import { Invoices } from "@/db/schema";
 import DashboardTable from "@/components/DashboardTable";
 
 export default async function Dashboard() {
-  const results = await db.select().from(Invoices);
+  const { userId } = await auth();
+  
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const results = await db
+    .select()
+    .from(Invoices)
+    .where(eq(Invoices.user_id, userId));
 
   return (
     <main>

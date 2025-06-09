@@ -1,3 +1,5 @@
+import { AVAILABLE_STATUSES } from "@/data/invoices";
+import { Status } from "@/types/invoices";
 import {
   integer,
   pgEnum,
@@ -7,12 +9,10 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
-export const statusEnum = pgEnum("status", [
-  "open",
-  "paid",
-  "void",
-  "uncollectable",
-]);
+export const statusEnum = pgEnum(
+  "status",
+  AVAILABLE_STATUSES.map(({ value }) => value) as [Status, ...Status[]]
+);
 
 export const Invoices = pgTable("invoices", {
   id: serial("id").primaryKey().notNull(),
@@ -20,6 +20,7 @@ export const Invoices = pgTable("invoices", {
   email: text("email").notNull(),
   amount: integer("amount").notNull(),
   description: text("description").notNull(),
+  user_id: text("user_id").notNull(),
   created_at: timestamp("created_at").notNull().defaultNow(),
   status: statusEnum("status").default("open").notNull(),
 });
