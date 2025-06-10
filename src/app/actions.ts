@@ -25,14 +25,10 @@ export async function createAction(data: FormData) {
 
   const amount = Math.floor(parseFloat(data.get("amount") as string) * 100);
   const description = data.get("description") as string;
-  const email = data.get("email") as string;
-  const customer = data.get("customer") as string;
 
   const result = await db
     .insert(Invoices)
     .values({
-      email,
-      customer,
       amount,
       description,
       user_id: userId,
@@ -67,4 +63,26 @@ export async function updateInvoiceStatus(data: FormData) {
     .where(and(eq(Invoices.id, invoiceId), eq(Invoices.user_id, userId)));
 
   revalidatePath(`/invoices/${invoiceId}`);
+}
+
+/**
+ * Deletes an invoice.
+ *
+ * @param data - The FormData object containing the invoice ID.
+ * @returns A promise that resolves when the deletion is complete.
+ */
+export async function deleteInvoice(data: FormData) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const invoiceId = parseInt(data.get("id") as string);
+
+  await db
+    .delete(Invoices)
+    .where(and(eq(Invoices.id, invoiceId), eq(Invoices.user_id, userId)));
+
+  redirect("/dashboard");
 }

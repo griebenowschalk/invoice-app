@@ -14,18 +14,6 @@
           "primaryKey": true,
           "notNull": true
         },
-        "customer": {
-          "name": "customer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "amount": {
           "name": "amount",
           "type": "integer",
