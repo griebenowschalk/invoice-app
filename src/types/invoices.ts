@@ -1,6 +1,6 @@
 import { AVAILABLE_STATUSES } from "@/data/invoices";
 
-export type Status = (typeof AVAILABLE_STATUSES)[number]["value"];
+export type Status = typeof AVAILABLE_STATUSES[number]["value"];
 
 export type InvoiceType = {
   id: number;
