@@ -23,14 +23,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronDownIcon, Ellipsis, Trash2 } from "lucide-react";
-import { Invoice as InvoiceType, Status } from "@/types/invoices";
+import { CustomerType, InvoiceType, Status } from "@/types/invoices";
 import { useOptimistic } from "react";
 
 interface InvoiceProps {
   invoice: InvoiceType;
+  customer: CustomerType;
 }
 
-export default function Invoice({ invoice }: InvoiceProps) {
+export default function Invoice({ invoice, customer }: InvoiceProps) {
   const [optimisticInvoice, setOptimisticInvoice] = useOptimistic(
     invoice.status,
     (_currentStatus: Status, newStatus: Status) => newStatus
@@ -144,18 +145,18 @@ export default function Invoice({ invoice }: InvoiceProps) {
             </strong>{" "}
             {format(invoice.created_at, "dd/MM/yyyy")}
           </li>
-          {/* <li className="flex gap-4 items-center">
+          <li className="flex gap-4 items-center">
             <strong className="block w-28 flex-shrink-0 font-medium text-sm">
               Customer:
             </strong>{" "}
-            {invoice.customer}
+            {customer.name}
           </li>
           <li className="flex gap-4 items-center">
             <strong className="block w-28 flex-shrink-0 font-medium text-sm">
               Email:
             </strong>{" "}
-            {invoice.email}
-          </li> */}
+            {customer.email}
+          </li>
         </ul>
       </Container>
     </main>

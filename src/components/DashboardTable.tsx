@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import type { Invoice } from "@/types/invoices";
+import type { InvoiceWithCustomerType } from "@/types/invoices";
 import StatusBadge from "@/components/StatusBadge";
 
 interface DashboardTableProps {
-  results: Invoice[];
+  results: InvoiceWithCustomerType[];
 }
 
 const DashboardTable = ({ results }: DashboardTableProps) => {
@@ -38,39 +38,39 @@ const DashboardTable = ({ results }: DashboardTableProps) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {results.map((invoice) => {
+        {results.map((result) => {
           return (
             <TableRow
-              key={invoice.id}
+              key={result.id}
               tabIndex={0}
-              onClick={() => navigateToInvoice(invoice.id)}
+              onClick={() => navigateToInvoice(result.id)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  navigateToInvoice(invoice.id);
+                  navigateToInvoice(result.id);
                 }
               }}
               className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
             >
               <TableCell className="text-left p-4">
                 <span className="font-semibold">
-                  {format(invoice.created_at, "dd/MM/yyyy")}
+                  {format(result.created_at, "dd/MM/yyyy")}
                 </span>
               </TableCell>
               <TableCell className="text-left p-4">
-                <span className="font-semibold">{invoice.customer}</span>
+                <span className="font-semibold">{result.customer.name}</span>
               </TableCell>
               <TableCell className="text-left p-4">
-                <span>{invoice.email}</span>
+                <span>{result.customer.email}</span>
               </TableCell>
               <TableCell className="text-center p-4">
                 <span className="font-semibold">
-                  <StatusBadge status={invoice.status} />
+                  <StatusBadge status={result.status} />
                 </span>
               </TableCell>
               <TableCell className="text-right p-4">
                 <span className="font-semibold">
-                  R{(invoice.amount / 100).toFixed(2)}
+                  R{(result.amount / 100).toFixed(2)}
                 </span>
               </TableCell>
             </TableRow>

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { Invoices } from "@/db/schema";
+import { Customers, Invoices } from "@/db/schema";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -25,6 +25,16 @@ export async function createAction(data: FormData) {
 
   const amount = Math.floor(parseFloat(data.get("amount") as string) * 100);
   const description = data.get("description") as string;
+  const name = data.get("name") as string;
+  const email = data.get("email") as string;
+
+  const [customer] = await db.insert(Customers).values({
+    name,
+    email,
+    user_id: userId,
+  }).returning({
+    id: Customers.id,
+  });
 
   const result = await db
     .insert(Invoices)
@@ -33,6 +43,7 @@ export async function createAction(data: FormData) {
       description,
       user_id: userId,
       status: "open",
+      customer_id: customer.id,
     })
     .returning({
       id: Invoices.id,

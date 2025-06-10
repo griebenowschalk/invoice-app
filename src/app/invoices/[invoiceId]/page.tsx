@@ -1,10 +1,10 @@
 import { db } from "@/db";
-import { Invoices } from "@/db/schema";
+import { Customers, Invoices } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 
 import { notFound, redirect } from "next/navigation";
-import { Invoice as InvoiceType } from "@/types/invoices";
+import { CustomerType, InvoiceType } from "@/types/invoices";
 import Invoice from "./Invoice";
 
 interface InvoiceProps {
@@ -27,6 +27,7 @@ export default async function InvoicePage({ params }: InvoiceProps) {
   const [result] = await db
     .select()
     .from(Invoices)
+    .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
     .where(and(eq(Invoices.id, invoiceId), eq(Invoices.user_id, userId)))
     .limit(1);
 
@@ -34,5 +35,10 @@ export default async function InvoicePage({ params }: InvoiceProps) {
     notFound();
   }
 
-  return <Invoice invoice={result as InvoiceType} />;
+  return (
+    <Invoice
+      invoice={result.invoices as InvoiceType}
+      customer={result.customer as CustomerType}
+    />
+  );
 }

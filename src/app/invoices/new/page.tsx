@@ -39,17 +39,17 @@ export default function NewInvoice() {
         >
           <div>
             <Label
-              htmlFor="customer"
+              htmlFor="name"
               className="block mb-2 text-sm font-medium"
             >
-              Customer
+              Full Name
             </Label>
             <Input
               type="text"
-              id="customer"
-              name="customer"
+              id="name"
+              name="name"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-              placeholder="Enter customer name"
+              placeholder="Enter full name"
             />
           </div>
           <div>

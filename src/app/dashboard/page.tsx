@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { Invoices } from "@/db/schema";
+import { Customers, Invoices } from "@/db/schema";
 
 import { auth } from "@clerk/nextjs/server";
 
@@ -16,7 +16,7 @@ import DashboardTable from "@/components/DashboardTable";
 
 export default async function Dashboard() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     redirect("/sign-in");
   }
@@ -24,7 +24,15 @@ export default async function Dashboard() {
   const results = await db
     .select()
     .from(Invoices)
+    .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
     .where(eq(Invoices.user_id, userId));
+
+  const invoices = results.map((result) => {
+    return {
+      ...result.invoices,
+      customer: result.customer,
+    };
+  });
 
   return (
     <main>
@@ -40,7 +48,7 @@ export default async function Dashboard() {
             </Button>
           </p>
         </div>
-        <DashboardTable results={results} />
+        <DashboardTable results={invoices} />
       </Container>
     </main>
   );
