@@ -3,7 +3,7 @@ import { Customers, Invoices } from "@/db/schema";
 
 import { auth } from "@clerk/nextjs/server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 import { Button } from "@/components/ui/button";
 import Container from "@/components/Container";
@@ -15,17 +15,29 @@ import { CirclePlus } from "lucide-react";
 import DashboardTable from "@/components/DashboardTable";
 
 export default async function Dashboard() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
+  let results;
 
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const results = await db
-    .select()
-    .from(Invoices)
-    .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
-    .where(eq(Invoices.user_id, userId));
+  // If the user is in an organization, get the invoices for the organization otherwise get the invoices for the user
+  if (orgId) {
+    results = await db
+      .select()
+      .from(Invoices)
+      .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
+      .where(eq(Invoices.organization_id, orgId));
+  } else {
+    results = await db
+      .select()
+      .from(Invoices)
+      .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
+      .where(
+        and(eq(Invoices.user_id, userId), isNull(Invoices.organization_id))
+      );
+  }
 
   const invoices = results.map((result) => {
     return {
