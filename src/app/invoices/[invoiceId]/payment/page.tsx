@@ -14,22 +14,20 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-interface InvoicePaymentProps {
-  params: { invoiceId: string };
-  searchParams: { success: string; session_id: string };
+type Props = {
+  params: Promise<{ invoiceId: string }>;
+  searchParams: Promise<{ success: string; session_id: string }>;
 }
 
-export default async function Payment({
-  params,
-  searchParams,
-}: InvoicePaymentProps) {
-  const invoiceId = parseInt((await params).invoiceId);
+export default async function Payment({ params, searchParams }: Props) {
+  const { invoiceId } = await params;
+  const invoiceIdNum = parseInt(invoiceId);
   const { session_id, success } = await searchParams;
   const isSuccess = session_id && success === "true";
   const isCanceled = success === "false";
   let isError = !session_id && isSuccess;
 
-  if (isNaN(invoiceId)) {
+  if (isNaN(invoiceIdNum)) {
     throw new Error("Invalid invoice ID");
   }
 
@@ -42,7 +40,7 @@ export default async function Payment({
       isError = true;
     } else {
       const formData = new FormData();
-      formData.append("id", invoiceId.toString());
+      formData.append("id", invoiceIdNum.toString());
       formData.append("status", "paid");
       await updateInvoiceStatus(formData);
     }
@@ -59,7 +57,7 @@ export default async function Payment({
     })
     .from(Invoices)
     .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
-    .where(and(eq(Invoices.id, invoiceId)))
+    .where(and(eq(Invoices.id, invoiceIdNum)))
     .limit(1);
 
   if (!result) {
@@ -83,7 +81,7 @@ export default async function Payment({
           <div>
             <div className="flex justify-between mb-8">
               <h1 className="flex items-center text-3xl font-semibold gap-4">
-                Invoice {invoiceId} <StatusBadge status={result.status} />
+                Invoice {invoiceIdNum} <StatusBadge status={result.status} />
               </h1>
             </div>
             <p className="text-3xl mb-3">
@@ -95,7 +93,7 @@ export default async function Payment({
             <h2 className="text-xl font-semibold mb-4">Manage Invoice</h2>
             {result.status === "open" && (
               <form action={createPaymentIntent}>
-                <input type="hidden" name="id" value={invoiceId} />
+                <input type="hidden" name="id" value={invoiceIdNum} />
                 <Button className="cursor-pointer flex gap-2 bg-green-600 hover:bg-green-700">
                   <CreditCard className="w-5 h-auto" />
                   Pay Invoice
@@ -116,7 +114,7 @@ export default async function Payment({
             <strong className="block w-28 flex-shrink-0 font-medium text-sm">
               Invoice ID:
             </strong>{" "}
-            {invoiceId}
+            {invoiceIdNum}
           </li>
           <li className="flex gap-4 items-center">
             <strong className="block w-28 flex-shrink-0 font-medium text-sm">

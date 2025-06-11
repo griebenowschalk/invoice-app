@@ -7,11 +7,11 @@ import { notFound, redirect } from "next/navigation";
 import { CustomerType, InvoiceType } from "@/types/invoices";
 import Invoice from "./Invoice";
 
-interface InvoiceProps {
-  params: { invoiceId: string };
+type Props = {
+  params: Promise<{ invoiceId: string }>
 }
 
-export default async function InvoicePage({ params }: InvoiceProps) {
+export default async function InvoicePage({ params }: Props) {
   const { userId, orgId } = await auth();
   let result;
 
@@ -19,9 +19,10 @@ export default async function InvoicePage({ params }: InvoiceProps) {
     redirect("/sign-in");
   }
 
-  const invoiceId = parseInt((await params).invoiceId);
+  const { invoiceId } = await params;
+  const invoiceIdNum = parseInt(invoiceId);
 
-  if (isNaN(invoiceId)) {
+  if (isNaN(invoiceIdNum)) {
     throw new Error("Invalid invoice ID");
   }
 
@@ -32,10 +33,7 @@ export default async function InvoicePage({ params }: InvoiceProps) {
       .from(Invoices)
       .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
       .where(
-        and(
-          eq(Invoices.id, invoiceId),
-          eq(Invoices.organization_id, orgId)
-        )
+        and(eq(Invoices.id, invoiceIdNum), eq(Invoices.organization_id, orgId))
       )
       .limit(1);
   } else {
@@ -45,7 +43,7 @@ export default async function InvoicePage({ params }: InvoiceProps) {
       .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
       .where(
         and(
-          eq(Invoices.id, invoiceId),
+          eq(Invoices.id, invoiceIdNum),
           eq(Invoices.user_id, userId),
           isNull(Invoices.organization_id)
         )
