@@ -2,14 +2,15 @@
 
 import { db } from "@/db";
 import { Customers, Invoices } from "@/db/schema";
-// import Stripe from "stripe";
+import Stripe from "stripe";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { Status } from "@/types/invoices";
+import { headers } from "next/headers";
 
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 /**
  * Handles the submission of form data by extracting the "amount" field,
@@ -134,4 +135,42 @@ export async function deleteInvoice(data: FormData) {
   redirect("/dashboard");
 }
 
+export async function createPaymentIntent(data: FormData) {
+  const origin = (await headers()).get("origin");
+  const invoiceId = parseInt(data.get("id") as string);
 
+  const [invoice] = await db
+    .select({
+      status: Invoices.status,
+      amount: Invoices.amount,
+    })
+    .from(Invoices)
+    .where(eq(Invoices.id, invoiceId))
+    .limit(1);
+
+  if (!invoice) {
+    throw new Error("Invoice not found");
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    success_url: `${origin}/invoices/${invoiceId}/payment?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/invoices/${invoiceId}/payment?success=false&session_id={CHECKOUT_SESSION_ID}`,
+    line_items: [
+      {
+        price_data: {
+          currency: "zar",
+          product: "prod_STf10enE7czVny",
+          unit_amount: invoice.amount,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+  });
+
+  if (!session.url) {
+    throw new Error("Failed to create checkout session");
+  }
+
+  redirect(session.url as string);
+}

@@ -22,9 +22,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDownIcon, Ellipsis, Trash2 } from "lucide-react";
+import { ChevronDownIcon, CreditCard, Ellipsis, Trash2 } from "lucide-react";
 import { CustomerType, InvoiceType, Status } from "@/types/invoices";
 import { useOptimistic } from "react";
+import Link from "next/link";
 
 interface InvoiceProps {
   invoice: InvoiceType;
@@ -93,13 +94,18 @@ export default function Invoice({ invoice, customer }: InvoiceProps) {
                 <DropdownMenuContent>
                   <DropdownMenuItem className="cursor-pointer">
                     <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="flex items-center gap-2"
-                      >
+                      <p className="flex items-center gap-2">
                         <Trash2 className="w-4 h-4" /> Delete Invoice
-                      </Button>
+                      </p>
                     </DialogTrigger>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Link
+                      href={`/invoices/${invoice.id}/payment`}
+                      className="flex items-center gap-2"
+                    >
+                      <CreditCard className="w-4 h-4" /> Payment
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
