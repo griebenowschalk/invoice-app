@@ -24,10 +24,10 @@ export default async function Payment({
   searchParams,
 }: InvoicePaymentProps) {
   const invoiceId = parseInt((await params).invoiceId);
-  const sessionId = searchParams.session_id;
-  const isSuccess = sessionId && searchParams.success === "true";
-  const isCanceled = searchParams.success === "false";
-  let isError = !sessionId && isSuccess;
+  const { session_id, success } = await searchParams;
+  const isSuccess = session_id && success === "true";
+  const isCanceled = success === "false";
+  let isError = !session_id && isSuccess;
 
   if (isNaN(invoiceId)) {
     throw new Error("Invalid invoice ID");
@@ -36,7 +36,7 @@ export default async function Payment({
   //Check stripe session status and if it is successful, update the invoice status to paid
   if (isSuccess) {
     const { payment_status } =
-      await stripe.checkout.sessions.retrieve(sessionId);
+      await stripe.checkout.sessions.retrieve(session_id);
 
     if (payment_status !== "paid") {
       isError = true;
