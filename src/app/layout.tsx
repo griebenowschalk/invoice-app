@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invoice App",
-  description: "Invoice app",
+  title: "Billing Buddy",
+  description: "Handle your invoices with ease",
 };
 
 export default function RootLayout({

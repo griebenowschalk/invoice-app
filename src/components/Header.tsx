@@ -16,12 +16,11 @@ const Header = () => {
         <div className="flex justify-between items-center gap-4 h-16">
           <div className="flex items-center gap-4">
             <p className="text-lg font-bold">
-              <Link href="/dashboard">Invoice App</Link>
+              <Link href="/dashboard">Billing Buddy</Link>
             </p>
-            <span className="text-slate-500"> / </span>
             <SignedIn>
+              <span className="text-slate-500"> / </span>
               <span className="-ml-2">
-                {/* If you don't want to show personal accounts */}
                 <OrganizationSwitcher
                   hidePersonal
                   afterCreateOrganizationUrl="/dashboard"

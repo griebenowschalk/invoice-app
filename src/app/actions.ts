@@ -9,8 +9,12 @@ import { auth } from "@clerk/nextjs/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { Status } from "@/types/invoices";
 import { headers } from "next/headers";
+import { Resend } from "resend";
+
+import InvoiceCreatedEmail from "@/emails/invoice-created";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 /**
  * Handles the submission of form data by extracting the "amount" field,
@@ -56,6 +60,15 @@ export async function createAction(data: FormData) {
     .returning({
       id: Invoices.id,
     });
+
+  const { data: emailData, error: emailError } = await resend.emails.send({
+    from: `Billing Buddy <info@${process.env.RESEND_FROM_EMAIL}>`,
+    to: [email],
+    subject: "You have a new invoice",
+    react: InvoiceCreatedEmail({ invoiceId: result[0].id }),
+  });
+
+  console.log(emailData, emailError);
 
   redirect(`/invoices/${result[0].id}`); // Redirect to the newly created invoice
 }

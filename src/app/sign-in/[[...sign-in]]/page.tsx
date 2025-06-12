@@ -38,7 +38,7 @@ export default function SignInPage() {
               </g>
             </svg>
             <h1 className="mt-4 text-xl font-medium tracking-tight text-neutral-950">
-              Sign in to Invoice App
+              Sign in to Billing Buddy
             </h1>
           </header>
           <Clerk.GlobalError className="block text-sm text-red-600" />
